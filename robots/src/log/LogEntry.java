@@ -1,4 +1,4 @@
-package log;
+package src.log;
 
 public class LogEntry {
     private LogLevel m_logLevel;

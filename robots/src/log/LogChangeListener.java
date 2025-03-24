@@ -1,4 +1,4 @@
-package log;
+package src.log;
 
 public interface LogChangeListener {
     public void onLogChanged();
