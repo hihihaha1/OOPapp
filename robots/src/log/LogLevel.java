@@ -1,4 +1,4 @@
-package log;
+package src.log;
 
 public enum LogLevel {
     Trace(0),

@@ -1,4 +1,4 @@
-package log;
+package src.log;
 
 public final class Logger {
     private static final LogWindowSource defaultLogSource;
