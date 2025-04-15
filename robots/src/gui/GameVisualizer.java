@@ -1,6 +1,5 @@
 package src.gui;
 
-
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
@@ -16,6 +15,7 @@ import javax.swing.JPanel;
 
 public class GameVisualizer extends JPanel {
     private final Timer m_timer = initTimer();
+    private final RobotModel robotModel;
 
     private static Timer initTimer() {
         Timer timer = new Timer("events generator", true);
@@ -32,7 +32,8 @@ public class GameVisualizer extends JPanel {
     private static final double maxVelocity = 0.1;
     private static final double maxAngularVelocity = 0.001;
 
-    public GameVisualizer() {
+    public GameVisualizer(RobotModel robotModel) {
+        this.robotModel = robotModel;
         m_timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -94,6 +95,9 @@ public class GameVisualizer extends JPanel {
         }
 
         moveRobot(velocity, angularVelocity, 10);
+
+        moveRobot(velocity, angularVelocity, 10);
+        robotModel.updatePosition(m_robotPositionX, m_robotPositionY, m_robotDirection);
     }
 
     private static double applyLimits(double value, double min, double max) {
@@ -160,7 +164,7 @@ public class GameVisualizer extends JPanel {
         int robotCenterY = round(m_robotPositionY);
         AffineTransform t = AffineTransform.getRotateInstance(direction, robotCenterX, robotCenterY);
         g.setTransform(t);
-        g.setColor(Color.MAGENTA);
+        g.setColor(Color.BLUE);
         fillOval(g, robotCenterX, robotCenterY, 30, 10);
         g.setColor(Color.BLACK);
         drawOval(g, robotCenterX, robotCenterY, 30, 10);

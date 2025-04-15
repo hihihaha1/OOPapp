@@ -1,139 +1,122 @@
 package src.gui;
 
+import src.log.Logger;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.Properties;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import java.awt.event.*;
 import java.beans.PropertyVetoException;
+import java.io.*;
+import java.util.Properties;
 
 public abstract class WindowCreator extends JInternalFrame {
-    private static final String SETTINGS_FILE = "window_settings.txt";
+    private static final String SETTINGS_FILE = "windows.properties";
     private static final String WINDOW_PREFIX = "window_";
 
     public WindowCreator(String title, boolean resizable, boolean closable,
                          boolean maximizable, boolean iconifiable) {
         super(title, resizable, closable, maximizable, iconifiable);
-        setIconifiable(true);
-        initWindow();
-        loadWindowState();
-        setupWindowListeners();
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        setDefaultSizeAndPosition();
+        setupListeners();
+        loadState();
     }
 
-    private void initWindow() {
-        setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
+    private void setDefaultSizeAndPosition() {
         setSize(400, 300);
         setLocation(50, 50);
     }
 
-    private void setupWindowListeners() {
+    private void setupListeners() {
         addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                saveWindowState();
-            }
-
-            @Override
-            public void componentResized(ComponentEvent e) {
-                saveWindowState();
-            }
+            @Override public void componentMoved(ComponentEvent e) { saveState(); }
+            @Override public void componentResized(ComponentEvent e) { saveState(); }
         });
 
         addInternalFrameListener(new InternalFrameAdapter() {
-            @Override
-            public void internalFrameClosing(InternalFrameEvent e) {
-                saveWindowState();
-                dispose();
-            }
-
-            @Override
-            public void internalFrameIconified(InternalFrameEvent e) {
-                saveWindowState();
-            }
-
-            @Override
-            public void internalFrameDeiconified(InternalFrameEvent e) {
-                saveWindowState();
-            }
+            @Override public void internalFrameClosing(InternalFrameEvent e) { saveState(); dispose(); }
+            @Override public void internalFrameIconified(InternalFrameEvent e) { saveIconState(); }
+            @Override public void internalFrameDeiconified(InternalFrameEvent e) { saveState(); }
         });
     }
 
-    protected void saveWindowState() {
+    private synchronized void saveState() {
         Properties props = loadProperties();
         String prefix = WINDOW_PREFIX + getTitle() + "_";
+        props.setProperty(prefix + "x", String.valueOf(getX()));
+        props.setProperty(prefix + "y", String.valueOf(getY()));
+        props.setProperty(prefix + "width", String.valueOf(getWidth()));
+        props.setProperty(prefix + "height", String.valueOf(getHeight()));
+        saveProperties(props);
+    }
 
-        Rectangle bounds = getBounds();
-        props.setProperty(prefix + "x", String.valueOf(bounds.x));
-        props.setProperty(prefix + "y", String.valueOf(bounds.y));
-        props.setProperty(prefix + "width", String.valueOf(bounds.width));
-        props.setProperty(prefix + "height", String.valueOf(bounds.height));
-        props.setProperty(prefix + "isIcon", String.valueOf(isIcon()));
-
-
-        try (FileOutputStream fos = new FileOutputStream(SETTINGS_FILE)) {
-            props.store(fos, "Window Settings");
-        } catch (IOException e) {
-            System.err.println("Ошибка при сохранении параметров окна " + getTitle() + ": " + e.getMessage());
+    private void saveIconState() {
+        try {
+            setIcon(true);
+            saveState();
+        } catch (PropertyVetoException e) {
+            Logger.error("Не удалось свернуть окно: " + getTitle());
         }
     }
 
-    protected void loadWindowState() {
+    private synchronized void loadState() {
         Properties props = loadProperties();
         String prefix = WINDOW_PREFIX + getTitle() + "_";
 
-        int x = Integer.parseInt(props.getProperty(prefix + "x", "50"));
-        int y = Integer.parseInt(props.getProperty(prefix + "y", "50"));
-        int width = Integer.parseInt(props.getProperty(prefix + "width", "400"));
-        int height = Integer.parseInt(props.getProperty(prefix + "height", "300"));
-        boolean isIcon = Boolean.parseBoolean(props.getProperty(prefix + "isIcon", "false"));
+        setBounds(
+                Integer.parseInt(props.getProperty(prefix + "x", String.valueOf(getX()))),
+                Integer.parseInt(props.getProperty(prefix + "y", String.valueOf(getY()))),
+                Integer.parseInt(props.getProperty(prefix + "width", String.valueOf(getWidth()))),
+                Integer.parseInt(props.getProperty(prefix + "height", String.valueOf(getHeight())))
+        );
 
-        setBounds(x, y, width, height);
-
-        if (isIcon) {
-            SwingUtilities.invokeLater(() -> {
-                try {
-                    setIcon(true);
-                    setSelected(false);
-                    System.out.println("Window " + getTitle() + " was minimized successfully.");
-                } catch (PropertyVetoException e) {
-                    System.err.println("Ошибка при сворачивании окна " + getTitle() + ": " + e.getMessage());
-                }
-            });
+        if (Boolean.parseBoolean(props.getProperty(prefix + "isIcon", "false"))) {
+            try { setIcon(true); }
+            catch (PropertyVetoException e) { Logger.error("Ошибка восстановления состояния окна"); }
         }
-
-        ensureVisible();
     }
 
     private Properties loadProperties() {
         Properties props = new Properties();
+        try (InputStream is = new FileInputStream(SETTINGS_FILE)) {
+            props.load(is);
+        } catch (IOException ignored) {}
+        return props;
+    }
+
+    private void saveProperties(Properties props) {
+        try (OutputStream os = new FileOutputStream(SETTINGS_FILE)) {
+            props.store(os, "Window states");
+        } catch (IOException e) {
+            Logger.error("Ошибка сохранения состояния окон");
+        }
+    }
+
+    protected Properties getProperties() {
+        Properties props = new Properties();
         File file = new File(SETTINGS_FILE);
         if (file.exists()) {
-            try (FileInputStream fis = new FileInputStream(file)) {
-                props.load(fis);
-            } catch (IOException e) {
-                System.err.println("Ошибка при загрузке настроек: " + e.getMessage());
-            }
+            try (InputStream is = new FileInputStream(file)) {
+                props.load(is);
+            } catch (IOException ignored) {}
         }
         return props;
     }
 
-    private void ensureVisible() {
-        Rectangle bounds = getBounds();
-        GraphicsConfiguration gc = getGraphicsConfiguration();
-        if (gc == null) return;
+    protected void saveAdditionalProperties(Properties additionalProps) {
+        Properties props = getProperties();
+        String prefix = WINDOW_PREFIX + getTitle() + "_";
 
-        Rectangle screenBounds = gc.getBounds();
-        if (bounds.x < screenBounds.x) bounds.x = screenBounds.x;
-        if (bounds.y < screenBounds.y) bounds.y = screenBounds.y;
-        if (bounds.x + bounds.width > screenBounds.x + screenBounds.width) {
-            bounds.x = screenBounds.x + screenBounds.width - bounds.width;
-        }
-        if (bounds.y + bounds.height > screenBounds.y + screenBounds.height) {
-            bounds.y = screenBounds.y + screenBounds.height - bounds.height;
-        }
+        additionalProps.forEach((key, value) ->
+                props.setProperty(prefix + key, value.toString()));
 
-        setBounds(bounds);
+        saveProperties(props);
+    }
+
+    protected void saveWindowState() {
+    }
+
+    protected void loadWindowState() {
+
     }
 }

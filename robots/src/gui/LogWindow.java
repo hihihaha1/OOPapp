@@ -1,43 +1,37 @@
 package src.gui;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-import java.awt.TextArea;
-import javax.swing.JPanel;
-import src.log.LogChangeListener;
-import src.log.LogEntry;
-import src.log.LogWindowSource;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
-public class LogWindow extends WindowCreator implements LogChangeListener {
-    private final LogWindowSource m_logSource;
-    private final TextArea m_logContent;
+public class LogWindow extends WindowCreator {
+    private final JTextPane logTextPane;
 
-    public LogWindow(LogWindowSource logSource) {
+    public LogWindow() {
         super("Протокол работы", true, true, true, true);
-        m_logSource = logSource;
-        m_logSource.registerListener(this);
-        m_logContent = new TextArea("");
 
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(m_logContent, BorderLayout.CENTER);
-        getContentPane().add(panel);
+        logTextPane = new JTextPane();
+        logTextPane.setContentType("text/html");
+        logTextPane.setEditable(false);
+        logTextPane.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        updateLogContent();
+        String htmlText = "Протокол работы";
+        logTextPane.setText(htmlText);
 
-        javax.swing.SwingUtilities.invokeLater(this::loadWindowState);
-    }
+        JScrollPane scrollPane = new JScrollPane(logTextPane);
+        scrollPane.setPreferredSize(new Dimension(300, 200));
+        add(scrollPane);
 
-    private void updateLogContent() {
-        StringBuilder content = new StringBuilder();
-        for (LogEntry entry : m_logSource.all()) {
-            content.append(entry.getMessage()).append("\n");
-        }
-        m_logContent.setText(content.toString());
-        m_logContent.invalidate();
+        setPreferredSize(new Dimension(300, 100));
     }
 
     @Override
-    public void onLogChanged() {
-        EventQueue.invokeLater(this::updateLogContent);
+    protected void saveWindowState() {
+        super.saveWindowState();
+    }
+
+    @Override
+    protected void loadWindowState() {
+        super.loadWindowState();
     }
 }
