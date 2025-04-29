@@ -1,4 +1,6 @@
-package src.gui;
+package src.gui.view;
+
+import src.gui.controller.MainApplicationFrame;
 
 import javax.swing.*;
 

@@ -1,8 +1,11 @@
-package src.gui;
+package src.gui.controller;
 
+import src.gui.model.RobotCoordinatesWindow;
+import src.gui.model.RobotModel;
+import src.gui.view.GameWindow;
+import src.gui.view.LogWindow;
 import src.log.Logger;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.prefs.Preferences;
 

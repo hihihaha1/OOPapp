@@ -1,4 +1,6 @@
-package src.gui;
+package src.gui.model;
+
+import src.gui.controller.MainApplicationFrame;
 
 import java.awt.Frame;
 

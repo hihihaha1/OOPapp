@@ -1,4 +1,4 @@
-package src.gui;
+package src.gui.view;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;

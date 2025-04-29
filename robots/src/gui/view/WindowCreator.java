@@ -1,4 +1,4 @@
-package src.gui;
+package src.gui.view;
 
 import src.log.Logger;
 import javax.swing.*;
