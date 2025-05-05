@@ -1,7 +1,6 @@
 package src.gui.model;
 
 import src.log.Logger;
-
 import java.awt.*;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -50,9 +49,9 @@ public class RobotModel extends Observable {
 
         moveRobot(velocity, angularVelocity, 10);
 
+        double[] positionData = {positionX, positionY, direction};
         setChanged();
-
-        notifyObservers();
+        notifyObservers(positionData);
 
         Logger.debug(String.format("Robot moved to: %.1f, %.1f, direction: %.2f", positionX, positionY, direction));
     }

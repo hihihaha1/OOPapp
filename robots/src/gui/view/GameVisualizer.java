@@ -1,7 +1,6 @@
 package src.gui.view;
 
 import src.gui.model.RobotModel;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -43,9 +42,12 @@ public class GameVisualizer extends JPanel implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        this.robotX = robotModel.getPositionX();
-        this.robotY = robotModel.getPositionY();
-        this.robotDirection = robotModel.getDirection();
+        if (arg instanceof double[]) {
+            double[] positionData = (double[]) arg;
+            this.robotX = positionData[0];
+            this.robotY = positionData[1];
+            this.robotDirection = positionData[2];
+        }
         repaint();
     }
 
