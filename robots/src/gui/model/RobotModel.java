@@ -52,7 +52,6 @@ public class RobotModel extends Observable {
         double[] positionData = {positionX, positionY, direction};
         setChanged();
         notifyObservers(positionData);
-
         Logger.debug(String.format("Robot moved to: %.1f, %.1f, direction: %.2f", positionX, positionY, direction));
     }
 

@@ -36,7 +36,6 @@ public class GameVisualizer extends JPanel implements Observer {
                 EventQueue.invokeLater(GameVisualizer.this::repaint);
             }
         }, 0, 50);
-
         setDoubleBuffered(true);
     }
 
@@ -88,3 +87,4 @@ public class GameVisualizer extends JPanel implements Observer {
         g.drawOval(centerX - diam1 / 2, centerY - diam2 / 2, diam1, diam2);
     }
 }
+
