@@ -96,8 +96,4 @@ public class RobotModel extends Observable {
     private static double applyLimits(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }
-
-    public double getPositionX() { return positionX; }
-    public double getPositionY() { return positionY; }
-    public double getDirection() { return direction; }
 }

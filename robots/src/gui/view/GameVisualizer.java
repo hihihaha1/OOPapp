@@ -48,7 +48,6 @@ public class GameVisualizer extends JPanel implements Observer {
             this.robotY = positionData[1];
             this.robotDirection = positionData[2];
         }
-        repaint();
     }
 
     @Override
